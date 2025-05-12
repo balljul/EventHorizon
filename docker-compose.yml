@@ -1,0 +1,100 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - eventhorizon-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - eventhorizon-network
+    command: bun run start
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:EventHz_Pg_28!9x@postgres:5432/eventhorizon
+      - JWT_SECRET='eh_j5Kt7X$hNm9zWvR2p!3QbL8yD6s@V'
+      - S3_ENDPOINT=minio:9000
+      - S3_ACCESS_KEY=eventhorizon_admin
+      - S3_SECRET_KEY='mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X'
+      - S3_BUCKET=eventhorizon-storage
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - minio
+    networks:
+      - eventhorizon-network
+    command: bun run start:prod
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=EventHz_Pg_28!9x
+      - POSTGRES_DB=eventhorizon
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - eventhorizon-network
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=eventhorizon_admin
+      - MINIO_ROOT_PASSWORD='mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X'
+    volumes:
+      - minio-data:/data
+    networks:
+      - eventhorizon-network
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "Eh_R3d!s5K8y#2pZ"]
+    networks:
+      - eventhorizon-network
+
+networks:
+  eventhorizon-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  minio-data:
+  redis-data:
