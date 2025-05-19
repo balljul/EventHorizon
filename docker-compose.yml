@@ -1,6 +1,3 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
   nginx:
     image: nginx:alpine
@@ -26,9 +23,9 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     networks:
       - eventhorizon-network
-    command: bun run start
 
   backend:
     build:
@@ -37,20 +34,24 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:EventHz_Pg_28!9x@postgres:5432/eventhorizon
-      - JWT_SECRET='eh_j5Kt7X$hNm9zWvR2p!3QbL8yD6s@V'
+      - JWT_SECRET=eh_j5Kt7X$hNm9zWvR2p!3QbL8yD6s@V
+      - JWT_EXPIRATION=1d
       - S3_ENDPOINT=minio:9000
       - S3_ACCESS_KEY=eventhorizon_admin
-      - S3_SECRET_KEY='mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X'
+      - S3_SECRET_KEY=mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X
       - S3_BUCKET=eventhorizon-storage
+      - S3_REGION=us-east-1
+      - REDIS_URL=redis://:Eh_R3d!s5K8y#2pZ@redis:6379
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - /app/dist
     depends_on:
       - postgres
       - minio
+      - redis
     networks:
       - eventhorizon-network
-    command: bun run start:prod
 
   postgres:
     image: postgres:latest
@@ -74,7 +75,7 @@ services:
       - "9001:9001"
     environment:
       - MINIO_ROOT_USER=eventhorizon_admin
-      - MINIO_ROOT_PASSWORD='mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X'
+      - MINIO_ROOT_PASSWORD=mKt7!dR4$sF9@hP3vL6bGxZy2wQp#X
     volumes:
       - minio-data:/data
     networks:

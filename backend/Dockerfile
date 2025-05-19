@@ -12,6 +12,9 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the application
 COPY . .
 
+# Ensure we have the NestJS CLI globally
+RUN bun add -g @nestjs/cli
+
 # Build the NestJS application
 RUN bun run build
 
