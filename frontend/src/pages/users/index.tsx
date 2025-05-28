@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
+// import Link from 'next/link'; // previously unused, removed
 import {
   Container,
   Typography,
@@ -15,16 +15,27 @@ import {
   Paper,
   CircularProgress,
   Box,
+  Alert,
 } from '@mui/material';
 import { getUsers, deleteUser, User } from '../../lib/users';
 
 const UsersPage: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: users, isLoading, error } = useQuery<User[], Error>(['users'], getUsers);
-  const deleteMutation = useMutation(deleteUser, {
+  const {
+    data: users,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<User[], Error>({
+    queryKey: ['users'],
+    queryFn: getUsers,
+    retry: false,
+  });
+  const deleteMutation = useMutation({
+    mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 
@@ -34,25 +45,32 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container>
-        <Box display="flex" justifyContent="center" mt={4}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-  if (error) {
-    return (
-      <Container>
-        <Typography color="error">Error: {error.message}</Typography>
-      </Container>
-    );
-  }
+  // Always render UI; show loading spinner or error alert as needed
 
   return (
     <Container>
+      {/* Loading Spinner */}
+      {isLoading && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      )}
+      {/* Error Alert */}
+      {error && (
+        <Box mt={2}>
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={() => refetch()}>
+                Retry
+              </Button>
+            }
+          >
+            Failed to load users: {error.message}
+          </Alert>
+        </Box>
+      )}
+      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" my={4}>
         <Typography variant="h4">Users</Typography>
         <Button
@@ -76,7 +94,7 @@ const UsersPage: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users?.map((user) => (
+            {(users && users.length > 0 ? users : []).map((user) => (
               <TableRow key={user.id} hover>
                 <TableCell>{user.id}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -104,6 +122,14 @@ const UsersPage: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {/* Empty state when no users */}
+            {!isLoading && (!users || users.length === 0) && (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  No users to display.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
