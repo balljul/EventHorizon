@@ -4,6 +4,8 @@ import { User } from '../entities/user.entity';
 import { RoleService } from '../../roles/services/role.service';
 import { Role as RoleEntity } from '../../roles/entities/role.entity';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -25,46 +27,62 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.userRepository.findByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
   }
 
-  async create(userData: Partial<User>): Promise<User> {
-    // Check if user with the same email already exists
-    const existingUser = await this.userRepository.findByEmail(userData.email);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.userRepository.findByEmail(createUserDto.email);
     if (existingUser) {
-      throw new ConflictException(`User with email ${userData.email} already exists`);
+      throw new ConflictException('Email already exists');
     }
 
-    // Hash the password
-    if (userData.password) {
-      userData.password = await this.hashPassword(userData.password);
-    }
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const userData = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
 
     return this.userRepository.create(userData);
   }
 
-  async update(id: string, userData: Partial<User>): Promise<User> {
-    // Check if user exists
-    await this.findById(id);
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    await this.findById(id); // Check if user exists
 
-    // Hash the password if it's being updated
-    if (userData.password) {
-      userData.password = await this.hashPassword(userData.password);
+    if (updateUserDto.email) {
+      const existingUser = await this.userRepository.findByEmail(updateUserDto.email);
+      if (existingUser && existingUser.id !== id) {
+        throw new ConflictException('Email already exists');
+      }
     }
 
-    return this.userRepository.update(id, userData);
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    return this.userRepository.update(id, updateUserDto);
   }
 
   async delete(id: string): Promise<void> {
-    // Check if user exists
-    await this.findById(id);
-
+    await this.findById(id); // Check if user exists
     await this.userRepository.delete(id);
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(password, salt);
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new NotFoundException('Invalid credentials');
+    }
+
+    return user;
   }
 
   async findUserWithRoles(id: string): Promise<User> {
@@ -76,7 +94,7 @@ export class UserService {
     return user;
   }
 
-  async assignRoleToUser(userId: string, roleId: number): Promise<User> {
+  async assignRoleToUser(userId: string, roleId: string): Promise<User> {
     // Find the user
     const user = await this.findUserWithRoles(userId);
 
@@ -99,7 +117,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async removeRoleFromUser(userId: string, roleId: number): Promise<User> {
+  async removeRoleFromUser(userId: string, roleId: string): Promise<User> {
     // Find the user
     const user = await this.findUserWithRoles(userId);
 
@@ -120,3 +138,5 @@ export class UserService {
     return user.roles || [];
   }
 }
+
+
