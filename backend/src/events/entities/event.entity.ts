@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Venue } from '../../venues/entities/venue.entity';
 import { Category } from '../../categories/entities/category.entity';
 
 /**
- * Entity class representing an event in the system.
+ * Entity representing an event in the system.
  * 
  * @class Event
  * @author Philipp Borkovic
@@ -17,7 +17,7 @@ export class Event {
   @Column()
   title: string;
 
-  @Column({ type: 'text' })
+  @Column('text')
   description: string;
 
   @Column()
@@ -29,30 +29,47 @@ export class Event {
   @Column({ type: 'timestamp' })
   endDate: Date;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
   price: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ nullable: true })
   capacity: number;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ default: true })
   isActive: boolean;
 
+  @Column({ name: 'organizer_id' })
+  organizerId: string;
+
   @ManyToOne(() => User)
-  @JoinColumn()
+  @JoinColumn({ name: 'organizer_id' })
   organizer: User;
 
+  @Column({ name: 'venue_id', nullable: true })
+  venueId: string;
+
   @ManyToOne(() => Venue)
-  @JoinColumn()
+  @JoinColumn({ name: 'venue_id' })
   venue: Venue;
 
+  @Column({ name: 'category_id', nullable: true })
+  categoryId: string;
+
   @ManyToOne(() => Category)
-  @JoinColumn()
+  @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @CreateDateColumn()
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'event_attendees',
+    joinColumn: { name: 'event_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' }
+  })
+  attendees: User[];
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 } 
