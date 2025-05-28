@@ -12,7 +12,7 @@ import { Event } from '../entities/event.entity';
  * @author Philipp Borkovic
  */
 @Injectable()
-export class EventService {
+export class EventService{
   constructor(private readonly eventRepository: EventRepository) {}
 
   /**
