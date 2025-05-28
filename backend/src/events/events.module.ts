@@ -7,8 +7,8 @@ import { EventRepository } from './repositories/event.repository';
 import { UsersModule } from '../users/users.module';
 
 /**
- * Module for managing events.
- * Provides event-related functionality including CRUD operations.
+ * Module for managing events in the application.
+ * Provides event management functionality and role-based access control.
  * 
  * @class EventsModule
  * @author Philipp Borkovic
