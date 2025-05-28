@@ -6,7 +6,8 @@ import { UpdateEventDto } from '../dto/update-event.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../roles/entities/role.entity';
+import { RoleType } from '../../auth/enums/role-type.enum';
+import { Event } from '../entities/event.entity';
 
 /**
  * Controller for managing events.
@@ -32,7 +33,7 @@ export class EventController {
    * Validates event dates and organizer existence.
    */
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(RoleType.ADMIN)
   @ApiOperation({
     summary: 'Create a new event',
     description: 'Creates a new event with the provided details. Requires ADMIN role. Validates event dates and organizer existence.',
@@ -61,7 +62,7 @@ export class EventController {
   @ApiResponse({
     status: 201,
     description: 'The event has been successfully created.',
-    type: CreateEventDto,
+    type: Event,
   })
   @ApiResponse({
     status: 400,
@@ -149,7 +150,7 @@ export class EventController {
   @ApiResponse({
     status: 200,
     description: 'Returns all events matching the filter criteria.',
-    type: [CreateEventDto],
+    type: [Event],
   })
   @ApiResponse({
     status: 401,
@@ -196,7 +197,7 @@ export class EventController {
   @ApiResponse({
     status: 200,
     description: 'Returns all active events.',
-    type: [CreateEventDto],
+    type: [Event],
   })
   @ApiResponse({
     status: 401,
@@ -231,7 +232,7 @@ export class EventController {
   @ApiResponse({
     status: 200,
     description: 'Returns the event details.',
-    type: CreateEventDto,
+    type: Event,
   })
   @ApiResponse({
     status: 401,
@@ -265,7 +266,7 @@ export class EventController {
    * Requires ADMIN role.
    */
   @Patch(':id')
-  @Roles(Role.ADMIN)
+  @Roles(RoleType.ADMIN)
   @ApiOperation({
     summary: 'Update an event',
     description: 'Updates an existing event with the provided data. Requires ADMIN role. All fields are optional for partial updates.',
@@ -297,7 +298,7 @@ export class EventController {
   @ApiResponse({
     status: 200,
     description: 'The event has been successfully updated.',
-    type: UpdateEventDto,
+    type: Event,
   })
   @ApiResponse({
     status: 400,
@@ -355,7 +356,7 @@ export class EventController {
    * Requires ADMIN role.
    */
   @Patch(':id/status')
-  @Roles(Role.ADMIN)
+  @Roles(RoleType.ADMIN)
   @ApiOperation({
     summary: 'Update event status',
     description: 'Updates the active status of an event. Requires ADMIN role.',
@@ -381,7 +382,7 @@ export class EventController {
   @ApiResponse({
     status: 200,
     description: 'The event status has been successfully updated.',
-    type: CreateEventDto,
+    type: Event,
   })
   @ApiResponse({
     status: 401,
@@ -430,7 +431,7 @@ export class EventController {
    * Requires ADMIN role.
    */
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(RoleType.ADMIN)
   @ApiOperation({
     summary: 'Delete an event',
     description: 'Permanently deletes an event. Requires ADMIN role. This action cannot be undone.',
