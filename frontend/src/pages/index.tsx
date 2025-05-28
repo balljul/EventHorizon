@@ -8,12 +8,18 @@ export default function Home() {
         <p className="mt-3 text-xl">
           A modern event management platform
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex space-x-4">
           <a
             href="/users"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Manage Users
+          </a>
+          <a
+            href="/attendees"
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Manage Attendees
           </a>
         </div>
       </main>
