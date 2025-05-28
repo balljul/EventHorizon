@@ -6,6 +6,7 @@ import { RolesModule } from './roles/roles.module';
 import { EventsModule } from './events/events.module';
 import { VenuesModule } from './venues/venues.module';
 import { CategoriesModule } from './categories/categories.module';
+import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { Role } from './roles/entities/role.entity';
 import { Event } from './events/entities/event.entity';
@@ -33,6 +34,7 @@ import { Category } from './categories/entities/category.entity';
     EventsModule,
     VenuesModule,
     CategoriesModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
