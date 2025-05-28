@@ -48,7 +48,7 @@ const UsersPage: React.FC = () => {
   // Always render UI; show loading spinner or error alert as needed
 
   return (
-    <Container>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Loading Spinner */}
       {isLoading && (
         <Box display="flex" justifyContent="center" mt={4}>
@@ -70,18 +70,21 @@ const UsersPage: React.FC = () => {
           </Alert>
         </Box>
       )}
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" my={4}>
-        <Typography variant="h4">Users</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => router.push('/users/create')}
-        >
-          Create User
-        </Button>
-      </Box>
-      <TableContainer component={Paper}>
+      {/* Header Section */}
+      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4">Users</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push('/users/create')}
+          >
+            Create User
+          </Button>
+        </Box>
+      </Paper>
+      {/* Users Table */}
+      <TableContainer component={Paper} sx={{ p: 2 }}>
         <Table>
           <TableHead>
             <TableRow>

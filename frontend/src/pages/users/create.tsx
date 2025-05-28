@@ -8,6 +8,8 @@ import {
   Button,
   Box,
   CircularProgress,
+  Alert,
+  Paper,
 } from '@mui/material';
 import { createUser, CreateUserDto } from '../../lib/users';
 
@@ -20,9 +22,10 @@ const CreateUserPage: React.FC = () => {
     firstName: '',
     lastName: '',
   });
-  const mutation = useMutation(createUser, {
+  const mutation = useMutation({
+    mutationFn: createUser,
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       router.push('/users');
     },
   });
@@ -40,11 +43,17 @@ const CreateUserPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box my={4}>
-        <Typography variant="h4" gutterBottom>
-          Create User
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom>
+          Create New User
         </Typography>
+        {/* Mutation Error */}
+        {mutation.isError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {(mutation.error as Error)?.message || 'Failed to create user.'}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} noValidate>
           <TextField
             fullWidth
@@ -98,7 +107,7 @@ const CreateUserPage: React.FC = () => {
             </Button>
           </Box>
         </form>
-      </Box>
+      </Paper>
     </Container>
   );
 };

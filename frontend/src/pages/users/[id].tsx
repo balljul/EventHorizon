@@ -8,6 +8,8 @@ import {
   Button,
   Box,
   CircularProgress,
+  Alert,
+  Paper,
 } from '@mui/material';
 import {
   getUser,
@@ -25,8 +27,12 @@ const UserDetailPage: React.FC = () => {
     data: user,
     isLoading,
     error,
-  } = useQuery<User, Error>(['user', id], () => getUser(id as string), {
-    enabled: !!id,
+    refetch,
+  } = useQuery<User, Error>({
+    queryKey: ['user', id],
+    queryFn: () => getUser(id as string),
+    enabled: Boolean(id),
+    retry: false,
   });
   const [form, setForm] = useState<UpdateUserDto>({
     email: '',
@@ -46,18 +52,17 @@ const UserDetailPage: React.FC = () => {
     }
   }, [user]);
 
-  const updateMutation = useMutation(
-    (data: UpdateUserDto) => updateUser(id as string, data),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['users']);
-        router.push('/users');
-      },
-    }
-  );
-  const deleteMutation = useMutation(() => deleteUser(id as string), {
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateUserDto) => updateUser(id as string, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      router.push('/users');
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUser(id as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       router.push('/users');
     },
   });
@@ -80,29 +85,49 @@ const UserDetailPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container>
-        <Box display="flex" justifyContent="center" mt={4}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-  if (error) {
-    return (
-      <Container>
-        <Typography color="error">Error: {error.message}</Typography>
-      </Container>
-    );
-  }
 
   return (
-    <Container maxWidth="sm">
-      <Box my={4}>
-        <Typography variant="h4" gutterBottom>
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom>
           Edit User
         </Typography>
+        {/* Loading Spinner */}
+        {isLoading && (
+          <Box display="flex" justifyContent="center" mt={2}>
+            <CircularProgress />
+          </Box>
+        )}
+        {/* Loading/Error for fetch */}
+        {error && (
+          <Box my={2}>
+            <Alert
+              severity="error"
+              action={
+                <Button color="inherit" size="small" onClick={() => refetch()}>
+                  Retry
+                </Button>
+              }
+            >
+              Failed to load user: {error.message}
+            </Alert>
+          </Box>
+        )}
+        {/* Mutation Errors */}
+        {updateMutation.isError && (
+          <Box my={2}>
+            <Alert severity="error">
+              Failed to update user: {(updateMutation.error as Error)?.message}
+            </Alert>
+          </Box>
+        )}
+        {deleteMutation.isError && (
+          <Box my={2}>
+            <Alert severity="error">
+              Failed to delete user: {(deleteMutation.error as Error)?.message}
+            </Alert>
+          </Box>
+        )}
         <form onSubmit={handleUpdate} noValidate>
           <TextField
             fullWidth
@@ -173,7 +198,7 @@ const UserDetailPage: React.FC = () => {
             </Button>
           </Box>
         </form>
-      </Box>
+      </Paper>
     </Container>
   );
 };
