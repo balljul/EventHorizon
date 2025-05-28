@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user.entity';
 import { RoleService } from '../../roles/services/role.service';
+import { Role as RoleEntity } from '../../roles/entities/role.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -114,7 +115,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async getUserRoles(userId: string): Promise<Role[]> {
+  async getUserRoles(userId: string): Promise<RoleEntity[]> {
     const user = await this.findUserWithRoles(userId);
     return user.roles || [];
   }
