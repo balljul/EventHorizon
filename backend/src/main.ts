@@ -6,14 +6,14 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.enableCors();
+
+  app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('EventHorizon API')
-    .setDescription('The EventHorizon API documentation')
+    .setTitle('Event Horizon API')
+    .setDescription('The Event Horizon API documentation')
     .setVersion('1.0')
-    .addTag('users', 'User management endpoints')
-    .addTag('roles', 'Role management endpoints')
     .addBearerAuth()
     .build();
 
