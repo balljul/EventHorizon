@@ -7,43 +7,51 @@ import { User } from '../entities/user.entity';
 export class UserRepository {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly repository: Repository<User>,
   ) {}
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    return this.repository.find({
+      relations: ['roles'],
+    });
   }
 
   async findById(id: string): Promise<User> {
-    return this.userRepository.findOne({ where: { id } });
+    return this.repository.findOne({
+      where: { id },
+      relations: ['roles'],
+    });
   }
 
   async findByIdWithRoles(id: string): Promise<User> {
-    return this.userRepository.findOne({
+    return this.repository.findOne({
       where: { id },
       relations: ['roles'],
     });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.userRepository.findOne({ where: { email } });
+    return this.repository.findOne({
+      where: { email },
+      relations: ['roles'],
+    });
   }
 
-  async create(user: Partial<User>): Promise<User> {
-    const newUser = this.userRepository.create(user);
-    return this.userRepository.save(newUser);
+  async create(userData: Partial<User>): Promise<User> {
+    const user = this.repository.create(userData);
+    return this.repository.save(user);
   }
 
-  async update(id: string, user: Partial<User>): Promise<User> {
-    await this.userRepository.update(id, user);
+  async update(id: string, userData: Partial<User>): Promise<User> {
+    await this.repository.update(id, userData);
     return this.findById(id);
   }
 
-  async save(user: User): Promise<User> {
-    return this.userRepository.save(user);
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.userRepository.delete(id);
+  async save(user: User): Promise<User> {
+    return this.repository.save(user);
   }
 }
