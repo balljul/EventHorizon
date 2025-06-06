@@ -72,4 +72,16 @@ export class Event {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  /**
+   * Optional URL for the event image
+   */
+  @Column({ nullable: true })
+  imageUrl?: string;
+
+  /**
+   * Array of tags associated with the event
+   */
+  @Column('text', { array: true, default: [] })
+  tags?: string[];
 } 
