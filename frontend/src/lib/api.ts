@@ -6,6 +6,13 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   config.timeout = 10000;
+  
+  // Add authentication token if available
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
   return config;
 });
 
