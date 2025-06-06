@@ -519,7 +519,6 @@ export class AttendeeController {
    * Requires authentication but not ADMIN role.
    */
   @Post('register')
-  @Roles(RoleType.USER, RoleType.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Self-register for event',
