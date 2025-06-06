@@ -8,6 +8,7 @@ import { CircularProgress, Box, IconButton, Fade } from '@mui/material';
 import { Brightness4, Brightness7, Palette } from '@mui/icons-material';
 import AdminDashboard from '../components/dashboard/AdminDashboard';
 import UserDashboard from '../components/dashboard/UserDashboard';
+import MainLayout from '../components/layout/MainLayout';
 
 export default function HomePage() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function HomePage() {
   };
 
   return (
-    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
+    <MainLayout>
       {/* Theme Toggle */}
       <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
         <Fade in timeout={1000}>
@@ -82,6 +83,6 @@ export default function HomePage() {
 
       {/* Render appropriate dashboard based on user role */}
       {isAdmin ? <AdminDashboard /> : <UserDashboard />}
-    </Box>
+    </MainLayout>
   );
 }
