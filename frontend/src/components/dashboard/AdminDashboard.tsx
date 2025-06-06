@@ -51,6 +51,7 @@ import {
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { dashboardApi, DashboardStats, Event as EventType } from '../../lib/dashboard';
 import { format } from 'date-fns';
+import EventDetailsModal from './EventDetailsModal';
 
 const glow = keyframes`
   0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
@@ -153,6 +154,8 @@ const AdminDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -170,6 +173,16 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (event: EventType) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedEvent(null);
   };
 
   const getBackgroundStyle = () => {
@@ -411,11 +424,13 @@ const AdminDashboard: React.FC = () => {
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       borderRadius: 2,
                       transition: 'all 0.3s ease',
+                      cursor: 'pointer',
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`,
                       },
                     }}
+                    onClick={() => handleViewDetails(event)}
                   >
                     <CardContent>
                       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -450,6 +465,14 @@ const AdminDashboard: React.FC = () => {
         </Paper>
         </>
         )}
+
+        {/* Event Details Modal */}
+        <EventDetailsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          event={selectedEvent}
+          isUserDashboard={false}
+        />
       </Box>
     </Box>
   );
