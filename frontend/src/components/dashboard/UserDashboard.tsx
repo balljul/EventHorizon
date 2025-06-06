@@ -38,6 +38,7 @@ import { format, isToday, isTomorrow, addDays } from 'date-fns';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { dashboardApi, UserDashboardData, Event as EventType } from '../../lib/dashboard';
+import EventDetailsModal from './EventDetailsModal';
 
 const glow = keyframes`
   0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
@@ -59,9 +60,10 @@ const float = keyframes`
 
 interface EventCardProps {
   event: EventType;
+  onViewDetails: (event: EventType) => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event }) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onViewDetails }) => {
   const { mode } = useThemeMode();
   const theme = useTheme();
 
@@ -210,6 +212,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         <Button
           variant="contained"
           fullWidth
+          onClick={() => onViewDetails(event)}
           sx={{
             background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             borderRadius: 2,
@@ -236,6 +239,8 @@ const UserDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<UserDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -255,6 +260,16 @@ const UserDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (event: EventType) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedEvent(null);
   };
 
   const getBackgroundStyle = () => {
@@ -429,7 +444,7 @@ const UserDashboard: React.FC = () => {
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                   {dashboardData.upcomingEvents.map((event) => (
                     <Box key={event.id}>
-                      <EventCard event={event} />
+                      <EventCard event={event} onViewDetails={handleViewDetails} />
                     </Box>
                   ))}
                 </Box>
@@ -487,6 +502,14 @@ const UserDashboard: React.FC = () => {
         </Box>
         </>
         )}
+
+        {/* Event Details Modal */}
+        <EventDetailsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          event={selectedEvent}
+          isUserDashboard={true}
+        />
       </Box>
     </Box>
   );
