@@ -372,5 +372,14 @@ export const dashboardApi = {
   async getAllTickets(): Promise<Ticket[]> {
     const response = await api.get('/tickets');
     return response.data;
+  },
+
+  // Register for event
+  async registerForEvent(eventId: string, userId: string): Promise<Attendee> {
+    const response = await api.post('/attendees/register', {
+      eventId,
+      userId
+    });
+    return response.data;
   }
 };
