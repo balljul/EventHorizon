@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   AppBar,
@@ -36,10 +38,10 @@ import {
   Notifications,
   AccountCircle,
 } from '@mui/icons-material';
-import { useRouter } from 'next/router';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface Props {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   window?: () => Window;
 }
 
@@ -60,7 +62,7 @@ function HideOnScroll({ children, window }: Props) {
 
   return (
     <Slide appear={false} direction="down" in={!trigger}>
-      {children}
+      <div>{children}</div>
     </Slide>
   );
 }
@@ -101,6 +103,7 @@ export default function MainLayout({ children, window }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
+  const pathname = usePathname();
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -155,7 +158,7 @@ export default function MainLayout({ children, window }: Props) {
                   color: 'white',
                 },
               },
-              ...(router.pathname === item.path && {
+              ...(pathname === item.path && {
                 backgroundColor: 'primary.main',
                 color: 'white',
                 '& .MuiListItemIcon-root': {
@@ -166,7 +169,7 @@ export default function MainLayout({ children, window }: Props) {
           >
             <ListItemIcon
               sx={{
-                color: router.pathname === item.path ? 'white' : 'text.secondary',
+                color: pathname === item.path ? 'white' : 'text.secondary',
                 transition: 'color 0.2s',
               }}
             >
@@ -175,7 +178,7 @@ export default function MainLayout({ children, window }: Props) {
             <ListItemText
               primary={item.text}
               primaryTypographyProps={{
-                fontWeight: router.pathname === item.path ? 600 : 500,
+                fontWeight: pathname === item.path ? 600 : 500,
               }}
             />
           </ListItem>
@@ -246,7 +249,7 @@ export default function MainLayout({ children, window }: Props) {
             </IconButton>
             
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              {navigationItems.find(item => item.path === router.pathname)?.text || 'Dashboard'}
+              {navigationItems.find(item => item.path === pathname)?.text || 'Dashboard'}
             </Typography>
             
             <IconButton color="inherit" sx={{ mr: 1 }}>
