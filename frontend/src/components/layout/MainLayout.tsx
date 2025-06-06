@@ -80,7 +80,7 @@ const navigationItems: NavigationItem[] = [
     children: [
       { text: 'All Events', icon: <EventAvailable />, path: '/events' },
       { text: 'My Events', icon: <CalendarToday />, path: '/events/my' },
-      { text: 'Create Event', icon: <Event />, path: '/events/create', adminOnly: true },
+      { text: 'Create Event', icon: <Event />, path: '/events/create' },
     ]
   },
   { 
@@ -305,7 +305,7 @@ export default function MainLayout({ children, window }: Props) {
               )}
             </ListItemButton>
             {hasChildren && (
-              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+              <Collapse in={isExpanded || hasActiveChild} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   {renderNavigationItems(item.children, level + 1)}
                 </List>
