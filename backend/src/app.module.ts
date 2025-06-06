@@ -6,12 +6,14 @@ import { RolesModule } from './roles/roles.module';
 import { EventsModule } from './events/events.module';
 import { VenuesModule } from './venues/venues.module';
 import { CategoriesModule } from './categories/categories.module';
+import { TicketsModule } from './tickets/tickets.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { Role } from './roles/entities/role.entity';
 import { Event } from './events/entities/event.entity';
 import { Venue } from './venues/entities/venue.entity';
 import { Category } from './categories/entities/category.entity';
+import { Ticket } from './tickets/entities/ticket.entity';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { Category } from './categories/entities/category.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'EventHz_Pg_28!9x',
       database: process.env.DB_DATABASE || 'eventhorizon',
-      entities: [User, Role, Event, Venue, Category],
+      entities: [User, Role, Event, Venue, Category, Ticket],
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
     }),
@@ -34,6 +36,7 @@ import { Category } from './categories/entities/category.entity';
     EventsModule,
     VenuesModule,
     CategoriesModule,
+    TicketsModule,
     AuthModule,
   ],
   controllers: [],
