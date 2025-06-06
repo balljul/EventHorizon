@@ -26,10 +26,12 @@ import {
   CalendarToday,
   AccessTime,
   EventAvailable,
+  Add,
 } from '@mui/icons-material';
 import { format, isAfter } from 'date-fns';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import Link from 'next/link';
 import { Event as EventType, dashboardApi } from '../../lib/dashboard';
 import EventDetailsModal from '../../components/dashboard/EventDetailsModal';
 import MainLayout from '../../components/layout/MainLayout';
@@ -38,6 +40,8 @@ export default function AllEventsPage() {
   const theme = useTheme();
   const { mode } = useThemeMode();
   const { user } = useAuth();
+  // Determine if the user has admin privileges
+  const isAdmin = user?.roles?.includes('admin') || user?.roles?.includes('administrator');
   const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,17 +146,27 @@ export default function AllEventsPage() {
           {/* Header */}
           <Fade in timeout={800}>
             <Box sx={{ mb: 4 }}>
-              <Box display="flex" alignItems="center" mb={2}>
-                <EventAvailable 
-                  sx={{ 
-                    fontSize: 40, 
-                    color: theme.palette.primary.main, 
-                    mr: 2 
-                  }} 
-                />
-                <Typography variant="h3" fontWeight="bold">
-                  All Events
-                </Typography>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Box display="flex" alignItems="center">
+                  <EventAvailable
+                    sx={{ fontSize: 40, color: theme.palette.primary.main, mr: 2 }}
+                  />
+                  <Typography variant="h3" fontWeight="bold">
+                    All Events
+                  </Typography>
+                </Box>
+                {isAdmin && (
+                  <Link href="/events/create" passHref>
+                    <Button
+                      component="a"
+                      variant="contained"
+                      startIcon={<Add />}
+                      sx={{ textTransform: 'none' }}
+                    >
+                      Create Event
+                    </Button>
+                  </Link>
+                )}
               </Box>
               <Typography variant="h6" color="text.secondary" mb={3}>
                 Discover and register for exciting events happening around you
