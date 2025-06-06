@@ -861,6 +861,23 @@ export default function CreateEventPage() {
                           </Typography>
                         </Box>
                       </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box display="flex" alignItems="center" mb={1}>
+                          <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
+                          <Typography variant="body2">
+                            {format(formData.startDate, 'hh:mm a')}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Box display="flex" alignItems="center" mb={1}>
+                          <LocationOn sx={{ mr: 1, color: 'primary.main' }} />
+                          <Typography variant="body2">
+                            {formData.location || 'Event location'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
                     {/* Category Preview */}
                     {formData.categoryId && (
                       <Box display="flex" alignItems="center" sx={{ mt: 2 }}>
@@ -896,23 +913,6 @@ export default function CreateEventPage() {
                         ))}
                       </Box>
                     )}
-                      <Grid item xs={12} sm={6}>
-                        <Box display="flex" alignItems="center" mb={1}>
-                          <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
-                          <Typography variant="body2">
-                            {format(formData.startDate, 'hh:mm a')}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box display="flex" alignItems="center" mb={1}>
-                          <LocationOn sx={{ mr: 1, color: 'primary.main' }} />
-                          <Typography variant="body2">
-                            {formData.location || 'Event location'}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
                   </CardContent>
                 </Card>
               </DialogContent>
