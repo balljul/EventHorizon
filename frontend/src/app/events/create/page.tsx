@@ -861,6 +861,41 @@ export default function CreateEventPage() {
                           </Typography>
                         </Box>
                       </Grid>
+                    {/* Category Preview */}
+                    {formData.categoryId && (
+                      <Box display="flex" alignItems="center" sx={{ mt: 2 }}>
+                        <Category sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography variant="body2">
+                          {categories.find(c => c.id === formData.categoryId)?.name || 'Category'}
+                        </Typography>
+                      </Box>
+                    )}
+                    {/* Tickets Preview */}
+                    {tickets.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="h6" fontWeight="bold" mb={1}>
+                          Tickets
+                        </Typography>
+                        {tickets.map((ticket, index) => (
+                          <Box key={index} sx={{ mb: 1 }}>
+                            <Typography variant="body2">
+                              {ticket.name}: €{ticket.price.toFixed(2)} x {ticket.quantity}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                    {/* Tags Preview */}
+                    {formData.tags && formData.tags.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="h6" fontWeight="bold" mb={1}>
+                          Tags
+                        </Typography>
+                        {formData.tags.map((tag, idx) => (
+                          <Chip key={idx} label={tag} sx={{ mr: 1, mt: 0.5 }} />
+                        ))}
+                      </Box>
+                    )}
                       <Grid item xs={12} sm={6}>
                         <Box display="flex" alignItems="center" mb={1}>
                           <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
