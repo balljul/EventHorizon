@@ -3,11 +3,16 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { CircularProgress, Box } from '@mui/material';
+import { useThemeMode } from '../contexts/ThemeContext';
+import { CircularProgress, Box, IconButton, Fade } from '@mui/material';
+import { Brightness4, Brightness7, Palette } from '@mui/icons-material';
+import AdminDashboard from '../components/dashboard/AdminDashboard';
+import UserDashboard from '../components/dashboard/UserDashboard';
 
 export default function HomePage() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
+  const { mode, setMode } = useThemeMode();
 
   useEffect(() => {
     if (!loading) {
@@ -24,8 +29,15 @@ export default function HomePage() {
         justifyContent="center"
         alignItems="center"
         minHeight="100vh"
+        sx={{
+          background: mode === 'cosmic' 
+            ? 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1a1a2e 100%)'
+            : mode === 'dark'
+            ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+            : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        }}
       >
-        <CircularProgress />
+        <CircularProgress size={60} sx={{ color: 'primary.main' }} />
       </Box>
     );
   }
@@ -34,36 +46,42 @@ export default function HomePage() {
     return null;
   }
 
+  // Check if user is admin (assuming admin role is in user.roles array)
+  const isAdmin = user.roles?.includes('admin') || user.roles?.includes('administrator');
+
+  const cycleTheme = () => {
+    const themes = ['light', 'dark', 'cosmic'] as const;
+    const currentIndex = themes.indexOf(mode);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setMode(themes[nextIndex]);
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-4xl font-bold">
-          Welcome to <span className="text-blue-600">EventHorizon</span>
-        </h1>
-        <p className="mt-3 text-xl">
-          A modern event management platform
-        </p>
-        <p className="mt-2 text-lg">
-          Hello, {user.firstName} {user.lastName}!
-        </p>
-        <div className="mt-6">
-          <a
-            href="/users"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-4"
-          >
-            Manage Users
-          </a>
-          <button
-            onClick={() => {
-              logout();
-              router.replace('/login');
+    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
+      {/* Theme Toggle */}
+      <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
+        <Fade in timeout={1000}>
+          <IconButton
+            onClick={cycleTheme}
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.2)',
+                transform: 'scale(1.1)',
+              },
+              transition: 'all 0.3s ease',
             }}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
-            Logout
-          </button>
-        </div>
-      </main>
-    </div>
+            {mode === 'cosmic' ? <Palette /> : mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+        </Fade>
+      </Box>
+
+      {/* Render appropriate dashboard based on user role */}
+      {isAdmin ? <AdminDashboard /> : <UserDashboard />}
+    </Box>
   );
 }
