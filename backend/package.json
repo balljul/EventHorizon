@@ -17,7 +17,10 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- migration:generate -d ./src/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "seed:run": "ts-node -r tsconfig-paths/register src/database/seeders/seed.ts seed",
+    "seed:clear": "ts-node -r tsconfig-paths/register src/database/seeders/seed.ts clear",
+    "seed:reset": "ts-node -r tsconfig-paths/register src/database/seeders/seed.ts reset"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.7",
