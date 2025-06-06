@@ -5,7 +5,6 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
   IconButton,
   Drawer,
   List,
@@ -25,6 +24,9 @@ import {
   useScrollTrigger,
   Fab,
   Zoom,
+  Collapse,
+  ListItemButton,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -37,8 +39,22 @@ import {
   KeyboardArrowUp,
   Notifications,
   AccountCircle,
+  Category,
+  PersonAdd,
+  EventSeat,
+  Analytics,
+  AdminPanelSettings,
+  GroupAdd,
+  EventAvailable,
+  Payment,
+  ExpandLess,
+  ExpandMore,
+  LocationOn,
+  CalendarToday,
+  Assignment,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Props {
   children?: React.ReactNode;
@@ -47,11 +63,70 @@ interface Props {
 
 const drawerWidth = 280;
 
-const navigationItems = [
+interface NavigationItem {
+  text: string;
+  icon: React.ReactNode;
+  path: string;
+  adminOnly?: boolean;
+  children?: NavigationItem[];
+}
+
+const navigationItems: NavigationItem[] = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
-  { text: 'Events', icon: <Event />, path: '/events' },
-  { text: 'Tickets', icon: <ConfirmationNumber />, path: '/tickets' },
-  { text: 'Users', icon: <People />, path: '/users' },
+  { 
+    text: 'Events', 
+    icon: <Event />, 
+    path: '/events',
+    children: [
+      { text: 'All Events', icon: <EventAvailable />, path: '/events' },
+      { text: 'My Events', icon: <CalendarToday />, path: '/events/my' },
+      { text: 'Create Event', icon: <Event />, path: '/events/create', adminOnly: true },
+    ]
+  },
+  { 
+    text: 'Tickets', 
+    icon: <ConfirmationNumber />, 
+    path: '/tickets',
+    children: [
+      { text: 'All Tickets', icon: <ConfirmationNumber />, path: '/tickets' },
+      { text: 'My Tickets', icon: <Assignment />, path: '/tickets/my' },
+      { text: 'Manage Tickets', icon: <EventSeat />, path: '/tickets/manage', adminOnly: true },
+    ]
+  },
+  { 
+    text: 'Attendees', 
+    icon: <People />, 
+    path: '/attendees',
+    children: [
+      { text: 'All Attendees', icon: <People />, path: '/attendees', adminOnly: true },
+      { text: 'Event Attendees', icon: <GroupAdd />, path: '/attendees/events', adminOnly: true },
+      { text: 'Registration', icon: <PersonAdd />, path: '/attendees/register' },
+    ]
+  },
+  { text: 'Categories', icon: <Category />, path: '/categories', adminOnly: true },
+  { text: 'Venues', icon: <LocationOn />, path: '/venues', adminOnly: true },
+  { 
+    text: 'Users', 
+    icon: <People />, 
+    path: '/users', 
+    adminOnly: true,
+    children: [
+      { text: 'All Users', icon: <People />, path: '/users' },
+      { text: 'User Roles', icon: <AdminPanelSettings />, path: '/users/roles' },
+      { text: 'Create User', icon: <PersonAdd />, path: '/users/create' },
+    ]
+  },
+  { 
+    text: 'Analytics', 
+    icon: <Analytics />, 
+    path: '/analytics', 
+    adminOnly: true,
+    children: [
+      { text: 'Event Analytics', icon: <Analytics />, path: '/analytics/events' },
+      { text: 'Revenue', icon: <Payment />, path: '/analytics/revenue' },
+      { text: 'Attendance', icon: <EventSeat />, path: '/analytics/attendance' },
+    ]
+  },
   { text: 'Settings', icon: <Settings />, path: '/settings' },
 ];
 
@@ -104,9 +179,14 @@ export default function MainLayout({ children, window }: Props) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  // Check if user is admin
+  const isAdmin = user?.roles?.includes('admin') || user?.roles?.includes('administrator') || false;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -127,6 +207,127 @@ export default function MainLayout({ children, window }: Props) {
     }
   };
 
+  const handleExpandClick = (itemText: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemText]: !prev[itemText]
+    }));
+  };
+
+  const renderNavigationItems = (items: NavigationItem[], level = 0) => {
+    return items
+      .filter(item => !item.adminOnly || isAdmin)
+      .map((item) => {
+        const hasChildren = item.children && item.children.length > 0;
+        const isExpanded = expandedItems[item.text];
+        const isActive = pathname === item.path;
+        const hasActiveChild = item.children?.some(child => pathname === child.path);
+
+        return (
+          <React.Fragment key={item.text}>
+            <ListItemButton
+              onClick={() => {
+                if (hasChildren) {
+                  handleExpandClick(item.text);
+                } else {
+                  handleNavigation(item.path);
+                }
+              }}
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                ml: level * 2,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  transform: 'translateX(8px)',
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                ...(isActive || hasActiveChild ? {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                } : {}),
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  color: isActive || hasActiveChild ? 'white' : 'text.secondary',
+                  transition: 'color 0.2s',
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontWeight: isActive || hasActiveChild ? 600 : 500,
+                    fontSize: level > 0 ? '0.875rem' : '1rem',
+                  }
+                }}
+              />
+              {hasChildren && (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {item.adminOnly && (
+                    <Chip 
+                      label="Admin" 
+                      size="small" 
+                      sx={{ 
+                        mr: 1, 
+                        height: 20,
+                        fontSize: '0.625rem',
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white'
+                      }} 
+                    />
+                  )}
+                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                </Box>
+              )}
+              {!hasChildren && item.adminOnly && (
+                <Chip 
+                  label="Admin" 
+                  size="small" 
+                  sx={{ 
+                    height: 20,
+                    fontSize: '0.625rem',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    color: 'white'
+                  }} 
+                />
+              )}
+            </ListItemButton>
+            {hasChildren && (
+              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {renderNavigationItems(item.children, level + 1)}
+                </List>
+              </Collapse>
+            )}
+          </React.Fragment>
+        );
+      });
+  };
+
+  const getCurrentPageTitle = () => {
+    for (const item of navigationItems) {
+      if (item.path === pathname) return item.text;
+      if (item.children) {
+        for (const child of item.children) {
+          if (child.path === pathname) return child.text;
+        }
+      }
+    }
+    return 'Dashboard';
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -141,48 +342,7 @@ export default function MainLayout({ children, window }: Props) {
       <Divider />
       
       <List sx={{ flex: 1, px: 2, py: 1 }}>
-        {navigationItems.map((item) => (
-          <ListItem
-            key={item.text}
-            onClick={() => handleNavigation(item.path)}
-            sx={{
-              borderRadius: 2,
-              mb: 0.5,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              '&:hover': {
-                backgroundColor: 'primary.main',
-                color: 'white',
-                transform: 'translateX(8px)',
-                '& .MuiListItemIcon-root': {
-                  color: 'white',
-                },
-              },
-              ...(pathname === item.path && {
-                backgroundColor: 'primary.main',
-                color: 'white',
-                '& .MuiListItemIcon-root': {
-                  color: 'white',
-                },
-              }),
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                color: pathname === item.path ? 'white' : 'text.secondary',
-                transition: 'color 0.2s',
-              }}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.text}
-              primaryTypographyProps={{
-                fontWeight: pathname === item.path ? 600 : 500,
-              }}
-            />
-          </ListItem>
-        ))}
+        {renderNavigationItems(navigationItems)}
       </List>
       
       <Divider />
@@ -215,10 +375,10 @@ export default function MainLayout({ children, window }: Props) {
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" fontWeight={600}>
-              John Doe
+              {user?.firstName} {user?.lastName}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Event Organizer
+              {isAdmin ? 'Administrator' : 'User'}
             </Typography>
           </Box>
         </Box>
@@ -249,7 +409,7 @@ export default function MainLayout({ children, window }: Props) {
             </IconButton>
             
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              {navigationItems.find(item => item.path === pathname)?.text || 'Dashboard'}
+              {getCurrentPageTitle()}
             </Typography>
             
             <IconButton color="inherit" sx={{ mr: 1 }}>
@@ -344,16 +504,18 @@ export default function MainLayout({ children, window }: Props) {
         open={Boolean(anchorEl)}
         onClose={handleProfileMenuClose}
         onClick={handleProfileMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1.5,
-            minWidth: 200,
-            '& .MuiMenuItem-root': {
-              px: 2,
-              py: 1.5,
+        slotProps={{
+          paper: {
+            elevation: 3,
+            sx: {
+              mt: 1.5,
+              minWidth: 200,
+              '& .MuiMenuItem-root': {
+                px: 2,
+                py: 1.5,
+              },
             },
-          },
+          }
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -371,7 +533,7 @@ export default function MainLayout({ children, window }: Props) {
           Settings
         </MenuItem>
         <Divider />
-        <MenuItem>
+        <MenuItem onClick={logout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
