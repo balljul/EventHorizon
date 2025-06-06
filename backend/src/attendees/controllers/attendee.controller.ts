@@ -513,4 +513,58 @@ export class AttendeeController {
   async getEventAttendanceStats(@Param('eventId') eventId: string) {
     return this.attendeeService.getEventAttendanceStats(eventId);
   }
+
+  /**
+   * Allows a user to register themselves for an event.
+   * Requires authentication but not ADMIN role.
+   */
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Self-register for event',
+    description: 'Allows an authenticated user to register themselves for an event.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        eventId: {
+          type: 'string',
+          format: 'uuid',
+          example: '123e4567-e89b-12d3-a456-426614174002',
+          description: 'The unique identifier of the event to register for',
+        },
+        userId: {
+          type: 'string',
+          format: 'uuid',
+          example: '123e4567-e89b-12d3-a456-426614174001',
+          description: 'The unique identifier of the user registering',
+        },
+      },
+      required: ['eventId', 'userId'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully registered for event',
+    type: Attendee,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'User is already registered for this event',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Event or user not found',
+  })
+  async registerForEvent(@Body() body: { eventId: string; userId: string }): Promise<Attendee> {
+    const createAttendeeDto: CreateAttendeeDto = {
+      userId: body.userId,
+      eventId: body.eventId,
+      status: AttendanceStatus.REGISTERED,
+      isPaid: false,
+      paymentAmount: 0,
+    };
+    return this.attendeeService.create(createAttendeeDto);
+  }
 } 
