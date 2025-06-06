@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDate, IsNumber, IsBoolean, IsUUID, Min, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsDate, IsNumber, IsBoolean, IsUUID, Min, MaxLength, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -105,4 +105,24 @@ export class UpdateEventDto {
   @IsUUID()
   @IsOptional()
   categoryId?: string;
+
+  @ApiProperty({
+    description: 'Optional URL for the event image',
+    example: 'https://example.com/event-image.jpg',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
+  @ApiProperty({
+    description: 'Tags associated with the event',
+    type: [String],
+    required: false,
+    example: ['Technology', 'Business'],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  tags?: string[];
 } 
