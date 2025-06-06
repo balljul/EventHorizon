@@ -374,11 +374,20 @@ export const dashboardApi = {
     return response.data;
   },
 
-  // Register for event
   async registerForEvent(eventId: string, userId: string): Promise<Attendee> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
     const response = await api.post('/attendees/register', {
       eventId,
       userId
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
     return response.data;
   }
