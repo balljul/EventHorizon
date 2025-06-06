@@ -35,8 +35,10 @@ import {
   AutoAwesome,
   Brightness4,
   Brightness7,
+  Palette,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -72,10 +74,10 @@ export default function LoginPage() {
   const theme = useTheme();
   const router = useRouter();
   const { login } = useAuth();
+  const { mode, setMode } = useThemeMode();
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const {
     register,
@@ -136,8 +138,10 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: isDarkMode
+        background: mode === 'cosmic'
           ? 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1a1a2e 100%)'
+          : mode === 'dark'
+          ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
           : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         position: 'relative',
         overflow: 'hidden',
@@ -148,8 +152,10 @@ export default function LoginPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: isDarkMode
+          background: mode === 'cosmic'
             ? 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(120, 219, 226, 0.3) 0%, transparent 50%)'
+            : mode === 'dark' 
+            ? 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.2) 0%, transparent 50%)'
             : 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%)',
           zIndex: 0,
         },
@@ -160,7 +166,12 @@ export default function LoginPage() {
       {/* Theme Toggle */}
       <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
         <IconButton
-          onClick={() => setIsDarkMode(!isDarkMode)}
+          onClick={() => {
+            const themes = ['light', 'dark', 'cosmic'] as const;
+            const currentIndex = themes.indexOf(mode);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            setMode(themes[nextIndex]);
+          }}
           sx={{
             color: 'white',
             backgroundColor: alpha(theme.palette.background.paper, 0.1),
@@ -172,7 +183,7 @@ export default function LoginPage() {
             transition: 'all 0.3s ease',
           }}
         >
-          {isDarkMode ? <Brightness7 /> : <Brightness4 />}
+          {mode === 'cosmic' ? <Palette /> : mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
       </Box>
 
@@ -197,16 +208,18 @@ export default function LoginPage() {
                 alignItems: 'center',
                 width: '100%',
                 borderRadius: 4,
-                background: isDarkMode
+                background: mode === 'cosmic'
                   ? 'linear-gradient(145deg, rgba(25, 25, 25, 0.95) 0%, rgba(15, 15, 35, 0.95) 100%)'
+                  : mode === 'dark'
+                  ? 'linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 40, 0.95) 100%)'
                   : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
                 backdropFilter: 'blur(20px)',
-                border: isDarkMode 
-                  ? '1px solid rgba(255, 255, 255, 0.1)'
-                  : '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: isDarkMode
-                  ? '0 32px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                  : '0 32px 64px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2)',
+                border: mode === 'light'
+                  ? '1px solid rgba(255, 255, 255, 0.2)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: mode === 'light'
+                  ? '0 32px 64px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                  : '0 32px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                 position: 'relative',
                 overflow: 'hidden',
                 '&::before': {
@@ -235,16 +248,16 @@ export default function LoginPage() {
                       sx={{
                         p: 3,
                         borderRadius: '50%',
-                        background: isDarkMode
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
-                          : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        background: mode === 'light'
+                          ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                         color: 'white',
                         mb: 3,
                         position: 'relative',
                         animation: `${pulse} 2s ease-in-out infinite`,
-                        boxShadow: isDarkMode
-                          ? '0 20px 40px rgba(102, 126, 234, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.1)'
-                          : '0 20px 40px rgba(79, 172, 254, 0.4)',
+                        boxShadow: mode === 'light'
+                          ? '0 20px 40px rgba(79, 172, 254, 0.4)'
+                          : '0 20px 40px rgba(102, 126, 234, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.1)',
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -268,9 +281,9 @@ export default function LoginPage() {
                     variant="h3" 
                     fontWeight="bold"
                     sx={{
-                      background: isDarkMode
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
-                        : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                      background: mode === 'light'
+                        ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -282,31 +295,31 @@ export default function LoginPage() {
                   </Typography>
                   
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <Stars sx={{ color: isDarkMode ? '#ffd700' : '#ff6b6b', fontSize: 16 }} />
+                    <Stars sx={{ color: mode === 'light' ? '#ff6b6b' : '#ffd700', fontSize: 16 }} />
                     <Typography 
                       variant="h6" 
                       sx={{ 
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                        color: mode === 'light' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.8)',
                         fontWeight: 500,
                       }}
                     >
                       Welcome to the Future
                     </Typography>
-                    <AutoAwesome sx={{ color: isDarkMode ? '#ffd700' : '#ff6b6b', fontSize: 16 }} />
+                    <AutoAwesome sx={{ color: mode === 'light' ? '#ff6b6b' : '#ffd700', fontSize: 16 }} />
                   </Box>
 
                   <Chip
                     label="Experience Innovation"
                     sx={{
-                      background: isDarkMode
-                        ? 'linear-gradient(45deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2))'
-                        : 'linear-gradient(45deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2))',
-                      color: isDarkMode ? '#667eea' : '#4facfe',
+                      background: mode === 'light'
+                        ? 'linear-gradient(45deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2))'
+                        : 'linear-gradient(45deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2))',
+                      color: mode === 'light' ? '#4facfe' : '#667eea',
                       fontWeight: 600,
                       borderRadius: 3,
-                      border: isDarkMode 
-                        ? '1px solid rgba(102, 126, 234, 0.3)'
-                        : '1px solid rgba(79, 172, 254, 0.3)',
+                      border: mode === 'light'
+                        ? '1px solid rgba(79, 172, 254, 0.3)'
+                        : '1px solid rgba(102, 126, 234, 0.3)',
                     }}
                   />
                 </Box>
@@ -320,9 +333,9 @@ export default function LoginPage() {
                       width: '100%', 
                       mb: 3,
                       borderRadius: 2,
-                      backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : undefined,
-                      color: isDarkMode ? '#ff6b6b' : undefined,
-                      border: isDarkMode ? '1px solid rgba(244, 67, 54, 0.2)' : undefined,
+                      backgroundColor: mode !== 'light' ? 'rgba(244, 67, 54, 0.1)' : undefined,
+                      color: mode !== 'light' ? '#ff6b6b' : undefined,
+                      border: mode !== 'light' ? '1px solid rgba(244, 67, 54, 0.2)' : undefined,
                     }}
                   >
                     {error}
@@ -351,7 +364,7 @@ export default function LoginPage() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Email sx={{ color: isDarkMode ? '#667eea' : '#4facfe' }} />
+                          <Email sx={{ color: mode === 'light' ? '#4facfe' : '#667eea' }} />
                         </InputAdornment>
                       ),
                     }}
@@ -359,29 +372,29 @@ export default function LoginPage() {
                       mb: 3,
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
-                        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)',
                         backdropFilter: 'blur(10px)',
-                        border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                        border: mode !== 'light' ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           transform: 'translateY(-2px)',
-                          boxShadow: isDarkMode 
-                            ? '0 8px 25px rgba(102, 126, 234, 0.3)'
-                            : '0 8px 25px rgba(79, 172, 254, 0.3)',
-                          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+                          boxShadow: mode === 'light'
+                            ? '0 8px 25px rgba(79, 172, 254, 0.3)'
+                            : '0 8px 25px rgba(102, 126, 234, 0.3)',
+                          backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.08)',
                         },
                         '&.Mui-focused': {
                           transform: 'translateY(-2px)',
-                          boxShadow: isDarkMode 
-                            ? '0 8px 25px rgba(102, 126, 234, 0.4)'
-                            : '0 8px 25px rgba(79, 172, 254, 0.4)',
+                          boxShadow: mode === 'light'
+                            ? '0 8px 25px rgba(79, 172, 254, 0.4)'
+                            : '0 8px 25px rgba(102, 126, 234, 0.4)',
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : undefined,
+                        color: mode !== 'light' ? 'rgba(255, 255, 255, 0.7)' : undefined,
                       },
                       '& .MuiOutlinedInput-input': {
-                        color: isDarkMode ? 'white' : undefined,
+                        color: mode !== 'light' ? 'white' : undefined,
                       },
                     }}
                   />
@@ -401,7 +414,7 @@ export default function LoginPage() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <LockOutlined sx={{ color: isDarkMode ? '#667eea' : '#4facfe' }} />
+                          <LockOutlined sx={{ color: mode === 'light' ? '#4facfe' : '#667eea' }} />
                         </InputAdornment>
                       ),
                       endAdornment: (
@@ -409,7 +422,7 @@ export default function LoginPage() {
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
-                            sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : undefined }}
+                            sx={{ color: mode !== 'light' ? 'rgba(255, 255, 255, 0.7)' : undefined }}
                           >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
@@ -420,29 +433,29 @@ export default function LoginPage() {
                       mb: 4,
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
-                        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)',
                         backdropFilter: 'blur(10px)',
-                        border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                        border: mode !== 'light' ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           transform: 'translateY(-2px)',
-                          boxShadow: isDarkMode 
-                            ? '0 8px 25px rgba(102, 126, 234, 0.3)'
-                            : '0 8px 25px rgba(79, 172, 254, 0.3)',
-                          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+                          boxShadow: mode === 'light'
+                            ? '0 8px 25px rgba(79, 172, 254, 0.3)'
+                            : '0 8px 25px rgba(102, 126, 234, 0.3)',
+                          backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.08)',
                         },
                         '&.Mui-focused': {
                           transform: 'translateY(-2px)',
-                          boxShadow: isDarkMode 
-                            ? '0 8px 25px rgba(102, 126, 234, 0.4)'
-                            : '0 8px 25px rgba(79, 172, 254, 0.4)',
+                          boxShadow: mode === 'light'
+                            ? '0 8px 25px rgba(79, 172, 254, 0.4)'
+                            : '0 8px 25px rgba(102, 126, 234, 0.4)',
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : undefined,
+                        color: mode !== 'light' ? 'rgba(255, 255, 255, 0.7)' : undefined,
                       },
                       '& .MuiOutlinedInput-input': {
-                        color: isDarkMode ? 'white' : undefined,
+                        color: mode !== 'light' ? 'white' : undefined,
                       },
                     }}
                   />
@@ -457,26 +470,26 @@ export default function LoginPage() {
                       fontSize: '1.2rem',
                       fontWeight: 'bold',
                       borderRadius: 3,
-                      background: isDarkMode
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
-                        : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                      background: mode === 'light'
+                        ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                       backgroundSize: '200% 200%',
                       position: 'relative',
                       overflow: 'hidden',
                       transition: 'all 0.3s ease',
                       textTransform: 'none',
-                      boxShadow: isDarkMode
-                        ? '0 8px 32px rgba(102, 126, 234, 0.4)'
-                        : '0 8px 32px rgba(79, 172, 254, 0.4)',
+                      boxShadow: mode === 'light'
+                        ? '0 8px 32px rgba(79, 172, 254, 0.4)'
+                        : '0 8px 32px rgba(102, 126, 234, 0.4)',
                       '&:hover': {
                         transform: 'translateY(-3px)',
                         backgroundPosition: '100% 0',
-                        boxShadow: isDarkMode
-                          ? '0 12px 40px rgba(102, 126, 234, 0.6)'
-                          : '0 12px 40px rgba(79, 172, 254, 0.6)',
+                        boxShadow: mode === 'light'
+                          ? '0 12px 40px rgba(79, 172, 254, 0.6)'
+                          : '0 12px 40px rgba(102, 126, 234, 0.6)',
                       },
                       '&:disabled': {
-                        background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#ccc',
+                        background: mode !== 'light' ? 'rgba(255, 255, 255, 0.1)' : '#ccc',
                         transform: 'none',
                       },
                       '&::before': {
