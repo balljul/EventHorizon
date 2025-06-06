@@ -10,7 +10,7 @@ export enum AttendanceStatus {
   NO_SHOW = 'no_show',
 }
 
-@Entity()
+@Entity('attendees')
 export class Attendee {
   @PrimaryGeneratedColumn('uuid')
   id: string;
